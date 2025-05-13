@@ -3,10 +3,10 @@ mod instructions;
 use instructions::*;
 mod errors;
 mod state;
-declare_id!("Atz8fEeWh8t78QXvSj8uFUEYxcKsmKhU1Fy1wDkubSoK");
+declare_id!("ADbFUF2VZbZG7XKbP1KtcrvWYCQ3cdJ5Cgk3SZvmQV4");
 
 #[program]
-pub mod invoice_financing2 {
+pub mod invoice_financing {
     use super::*;
 
     pub fn create_invoice_listing(

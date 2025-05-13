@@ -17,42 +17,42 @@ pub struct SettleInvoicePayment<'info> {
     /// CHECK: This is the contract owner i.e admin wallet
     #[account(mut)]
     pub main_wallet: UncheckedAccount<'info>,
-    #[account(
-        mut,
-        seeds = [b"invoice", invoice.invoice_id.to_le_bytes().as_ref()],
-        bump = invoice.bump
-    )]
-    pub invoice: Account<'info, InvoiceListing>,
-    #[account(
-        mut,
-        seeds = [b"bidderVault", invoice.key().as_ref()],
-        bump
-    )]
-    pub bidder_vault: SystemAccount<'info>,
-    #[account(
-        seeds = [b"mint", main_wallet.key().as_ref(), invoice.invoice_id.to_le_bytes().as_ref()],
-        bump,
-        mint::decimals = 0,
-        mint::authority = invoice
-    )]
-    pub mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub investor: Signer<'info>,
     #[account(
-        associated_token::mint = mint,
-        associated_token::authority = investor
-    )]
+            mut,
+            seeds = [b"invoice", invoice.invoice_id.to_le_bytes().as_ref()],
+            bump = invoice.bump
+        )]
+    pub invoice: Account<'info, InvoiceListing>,
+    #[account(
+            mut,
+            seeds = [b"bidderVault", invoice.key().as_ref()],
+            bump
+        )]
+    pub bidder_vault: SystemAccount<'info>,
+    #[account(
+            seeds = [b"mint", main_wallet.key().as_ref(), invoice.invoice_id.to_le_bytes().as_ref()],
+            bump,
+            mint::decimals = 0,
+            mint::authority = invoice
+        )]
+    pub mint: InterfaceAccount<'info, Mint>,
+    #[account(
+            mut,
+            associated_token::mint = mint,
+            associated_token::authority = investor
+        )]
     pub investor_nft_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
-        init,
-        payer = investor,
-        associated_token::mint = mint,
-        associated_token::authority = main_wallet
-    )]
+            init,
+            payer = investor,
+            associated_token::mint = mint,
+            associated_token::authority = main_wallet
+        )]
     pub program_nft_account: InterfaceAccount<'info, TokenAccount>,
 
     pub token_program: Interface<'info, TokenInterface>,
-    pub token_metadata_program: Program<'info, Metaplex>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
@@ -61,6 +61,10 @@ impl<'info> SettleInvoicePayment<'info> {
         require!(
             self.invoice.status == Status::Funded,
             MarketplaceErrors::NotFundedError
+        );
+        require!(
+            self.bidder_vault.lamports() >= self.invoice.face_value,
+            MarketplaceErrors::NotEnoughFundsError
         );
         let accounts = TransferChecked {
             from: self.investor_nft_account.to_account_info(),

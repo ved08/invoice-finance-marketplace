@@ -18,4 +18,6 @@ pub enum MarketplaceErrors {
     NotWinnerError,
     #[msg("cannot settle payment yet")]
     NotFundedError,
+    #[msg("Not enough funds in vault to repay")]
+    NotEnoughFundsError,
 }
